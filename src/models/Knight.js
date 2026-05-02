@@ -1,12 +1,35 @@
+import { getFullProfile } from './KnightsConfig.js';
+
 export class Knight {
 	constructor(config) {
 		this.id = config.id;
-		this.name = config.name;
-		this.emoji = config.emoji;
 		this.model = config.model;
-		this.color = config.color;
-		glow;
-		active;
-		tokens;
+		this.active = config.active;
+
+		const profile = getFullProfile();
+		this.name = profile.name;
+		this.emoji = profile.emoji;
+		this.personality = profile.personality;
+		this.hex = profile.hex;
+		this.glow = profile.glow;
+	}
+
+	getTokens(mode) {
+		const map = { sharp: 80, normal: 150, detailed: 300 };
+		return map[mode] ?? 80;
+	}
+
+	getSystemPrompt(mode) {
+		return `You are ${this.name} at the AI Round Table. ${this.personality}. 
+Respond in maximum ${this.getTokens(mode)} tokens. 
+Be direct, stay in character, no lengthy introductions.`;
+	}
+
+	formatResponse(text) {
+		return text
+			.trim()
+			.replace(/^(As Sir \w+,?\s*)/i, '')
+			.replace(/^(I'?m\s+\w+[^.]*\.\s*)/i, '')
+			.replace(/^(I am\s+\w+[^.]*\.\s*)/i, '');
 	}
 }
