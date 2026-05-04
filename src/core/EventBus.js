@@ -6,7 +6,7 @@ class EventBus {
 			this.storage[event] = [];
 		}
 
-		if (!this.storage[event].include(callback)) {
+		if (!this.storage[event].includes(callback)) {
 			this.storage[event].push(callback);
 		}
 
