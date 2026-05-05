@@ -131,11 +131,10 @@ export class UIManager {
 	}
 
 	renderKnightCard(data) {
-		console.log('renderKnightCard called', data);
 		const card = this.KnightsContainer.querySelector(
 			`[data-knight="${data.id}"]`,
 		);
-		console.log('found card:', card);
+
 		if (!card) return;
 		card.querySelector('p').textContent = data.response;
 	}

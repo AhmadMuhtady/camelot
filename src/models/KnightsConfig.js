@@ -54,21 +54,39 @@ const PERSONALITIES = [
 ];
 export const KNIGHTS_CONFIG = [
 	{
-		id: 'llama',
-		model: 'meta-llama/llama-3.3-70b-instruct:free',
+		id: 'groq',
+		provider: 'groq',
+		model: 'llama-3.3-70b-versatile',
 		active: true,
 	},
-	{ id: 'hermes', model: 'openai/gpt-oss-20b:free', active: true },
-	{ id: 'openai', model: 'openai/gpt-oss-120b:free', active: true },
-	{ id: 'openai2', model: 'openai/gpt-oss-20b:free', active: true },
+	{ id: 'gemini', provider: 'gemini', model: 'gemini-2.5-flash', active: true },
+	{ id: 'cerebras', provider: 'cerebras', model: 'llama3.1-8b', active: true },
+	,
+	{
+		id: 'openrouter',
+		provider: 'openrouter',
+		model: 'openai/gpt-oss-120b:free',
+		active: true,
+	},
 
-	// Available to add via FAB panel
-
-	{ id: 'minimax', model: 'minimax/minimax-m2.5:free', active: false },
+	// Available to add
+	{
+		id: 'cerebras2',
+		provider: 'cerebras',
+		model: 'llama3.1-8b',
+		active: false,
+	},
+	{
+		id: 'groq2',
+		provider: 'groq',
+		model: 'llama-3.1-8b-instant',
+		active: false,
+	},
 ];
 
 const KNIGHT_NAMES = [
 	'Sir Lancelot',
+	'Sir merlin',
 	'Sir Gawain',
 	'Sir Percival',
 	'Sir Galahad',

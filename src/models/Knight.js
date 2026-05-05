@@ -5,6 +5,7 @@ export class Knight {
 		this.id = config.id;
 		this.model = config.model;
 		this.active = config.active;
+		this.provider = config.provider;
 
 		const profile = getFullProfile();
 		this.name = profile.name;
@@ -15,8 +16,8 @@ export class Knight {
 	}
 
 	getTokens(mode) {
-		const map = { sharp: 150, normal: 250, detailed: 400 };
-		return map[mode] ?? 150;
+		const map = { sharp: 200, normal: 350, detailed: 600 };
+		return map[mode] ?? 200;
 	}
 
 	getSystemPrompt(mode) {

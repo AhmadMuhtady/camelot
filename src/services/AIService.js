@@ -1,43 +1,18 @@
-import { CONFIG } from '../config.js';
+import { PROVIDERS } from './Providers.js';
 
 export class AIService {
-	constructor() {
-		this.apiKey = CONFIG.OPENROUTER_API_KEY;
-		this.baseUrl = 'https://openrouter.ai/api/v1/chat/completions';
-	}
-
 	async askKnight(knight, topic, mode) {
 		try {
-			const response = await fetch(this.baseUrl, {
-				method: 'POST',
-				headers: {
-					Authorization: `Bearer ${this.apiKey}`,
-					'Content-Type': 'application/json',
-					'HTTP-Referer': 'http://localhost:5500',
-					'X-Title': 'Camelot',
-				},
-				body: JSON.stringify({
-					model: knight.model,
-					max_tokens: knight.getTokens(mode),
-					messages: [
-						{
-							role: 'user',
-							content: `${knight.getSystemPrompt(mode)}\n\nNow respond to this topic: ${topic}`,
-						},
-					],
-				}),
-			});
-
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-
-			const data = await response.json();
-			console.log('Full error:', JSON.stringify(data));
-			const text = data.choices[0].message.content;
+			const text = await this._call(
+				knight.provider,
+				knight.model,
+				knight.getSystemPrompt(mode),
+				topic,
+				knight.getTokens(mode),
+			);
 			return knight.formatResponse(text);
-		} catch (error) {
-			console.error('Knight API Call Failed:', error.message);
+		} catch (err) {
+			console.error(`${knight.name} failed:`, err.message);
 			return `[${knight.name} could not respond]`;
 		}
 	}
@@ -48,39 +23,50 @@ export class AIService {
 				.map((r, i) => `${knights[i].name}: "${r}"`)
 				.join('\n');
 
-			const arthurPrompt = `You are King Arthur, the wise sovereign of the Round Table.
-Your knights have debated this topic: "${topic}"
+			const prompt = `You are King Arthur, the wise sovereign of the Round Table.
+Your knights have debated: "${topic}"
 
-Here are their perspectives:
 ${summary}
 
-Synthesize their views into one final verdict. Be decisive, wise, and concise.
-Maximum 150 tokens.`;
+Synthesize their views into one final verdict. Be decisive, wise, and concise. Max 150 tokens.`;
 
-			const response = await fetch(this.baseUrl, {
-				method: 'POST',
-				headers: {
-					Authorization: `Bearer ${this.apiKey}`,
-					'Content-Type': 'application/json',
-					'HTTP-Referer': 'http://localhost:5500',
-					'X-Title': 'Camelot',
-				},
-				body: JSON.stringify({
-					model: 'meta-llama/llama-3.3-70b-instruct:free',
-					max_tokens: 150,
-					messages: [{ role: 'user', content: arthurPrompt }],
-				}),
-			});
-
-			if (!response.ok) {
-				throw new Error(`Arthur HTTP error! status: ${response.status}`);
-			}
-
-			const data = await response.json();
-			console.log('Full error:', JSON.stringify(data));
-			return data.choices[0].message.content.trim();
-		} catch (error) {
-			console.error('King API Call Failed:', error.message);
+			return await this._call('gemini', 'gemini-2.5-flash', null, prompt, 300);
+		} catch (err) {
+			console.error('King API Call Failed:', err.message);
+			return '[The King is silent]';
 		}
+	}
+
+	async _call(providerKey, model, systemPrompt, userPrompt, maxTokens) {
+		const provider = PROVIDERS[providerKey];
+		if (!provider) throw new Error(`Unknown provider: ${providerKey}`);
+
+		// Gemini counts tokens differently — multiply for same output length
+		const adjustedTokens = providerKey === 'gemini' ? maxTokens * 3 : maxTokens;
+
+		const messages = systemPrompt
+			? [
+					{ role: 'system', content: systemPrompt },
+					{ role: 'user', content: `Topic: ${userPrompt}` },
+				]
+			: [{ role: 'user', content: userPrompt }];
+
+		const response = await fetch(provider.baseUrl, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${provider.apiKey}`,
+				'Content-Type': 'application/json',
+				...provider.headers,
+			},
+			body: JSON.stringify({ model, max_tokens: adjustedTokens, messages }),
+		});
+
+		if (!response.ok) {
+			const errorBody = await response.text();
+			throw new Error(`${providerKey} ${response.status}: ${errorBody}`);
+		}
+
+		const data = await response.json();
+		return data.choices[0].message.content.trim();
 	}
 }

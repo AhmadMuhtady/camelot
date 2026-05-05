@@ -22,6 +22,7 @@ export class CamelotManager {
 		const responses = [];
 		for (const knight of this.knights) {
 			const res = await this.ai.askKnight(knight, topic, mode);
+
 			responses.push(res);
 			BusEvent.emit('knight:response', { id: knight.id, response: res });
 			await new Promise((r) => setTimeout(r, 3000));
