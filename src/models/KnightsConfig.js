@@ -52,22 +52,19 @@ const PERSONALITIES = [
 	'A leader who focuses on decisive action',
 	'A judge who evaluates arguments and declares winners',
 ];
-
 export const KNIGHTS_CONFIG = [
-	// Default active council (4)
-	{ id: 'gemini', model: 'google/gemini-flash-1.5:free', active: true },
-	{ id: 'deepseek', model: 'deepseek/deepseek-v3:free', active: true },
-	{ id: 'llama', model: 'meta-llama/llama-3.3-70b:free', active: true },
-	{ id: 'mistral', model: 'mistralai/mistral-7b:free', active: true },
+	{
+		id: 'llama',
+		model: 'meta-llama/llama-3.3-70b-instruct:free',
+		active: true,
+	},
+	{ id: 'hermes', model: 'openai/gpt-oss-20b:free', active: true },
+	{ id: 'openai', model: 'openai/gpt-oss-120b:free', active: true },
+	{ id: 'openai2', model: 'openai/gpt-oss-20b:free', active: true },
 
 	// Available to add via FAB panel
-	{ id: 'qwen', model: 'qwen/qwen-72b:free', active: false },
-	{
-		id: 'nemotron',
-		model: 'nvidia/llama-3.1-nemotron-70b:free',
-		active: false,
-	},
-	{ id: 'phi', model: 'microsoft/phi-4:free', active: false },
+
+	{ id: 'minimax', model: 'minimax/minimax-m2.5:free', active: false },
 ];
 
 const KNIGHT_NAMES = [
@@ -88,9 +85,17 @@ const KNIGHT_NAMES = [
 const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const usedNames = new Set();
+const usedColors = new Set();
 
 function getFullProfile() {
-	const colorKey = pickRandom(Object.keys(COLOR_MAP));
+	const availableColors = Object.keys(COLOR_MAP).filter(
+		(c) => !usedColors.has(c),
+	);
+	const colorKey = pickRandom(
+		availableColors.length ? availableColors : Object.keys(COLOR_MAP),
+	);
+	usedColors.add(colorKey);
+
 	const color = COLOR_MAP[colorKey];
 
 	// Pick unique name

@@ -15,8 +15,8 @@ export class Knight {
 	}
 
 	getTokens(mode) {
-		const map = { sharp: 80, normal: 150, detailed: 300 };
-		return map[mode] ?? 80;
+		const map = { sharp: 150, normal: 250, detailed: 400 };
+		return map[mode] ?? 150;
 	}
 
 	getSystemPrompt(mode) {
@@ -28,8 +28,10 @@ Be direct, stay in character, no lengthy introductions.`;
 	formatResponse(text) {
 		return text
 			.trim()
+			.replace(/^[\s\S]*?<\/think>/i, '')
 			.replace(/^(As Sir \w+,?\s*)/i, '')
 			.replace(/^(I'?m\s+\w+[^.]*\.\s*)/i, '')
-			.replace(/^(I am\s+\w+[^.]*\.\s*)/i, '');
+			.replace(/^(I am\s+\w+[^.]*\.\s*)/i, '')
+			.trim();
 	}
 }
