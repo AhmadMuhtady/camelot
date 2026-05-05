@@ -61,15 +61,12 @@ export const KNIGHTS_CONFIG = [
 	},
 	{ id: 'gemini', provider: 'gemini', model: 'gemini-2.5-flash', active: true },
 	{ id: 'cerebras', provider: 'cerebras', model: 'llama3.1-8b', active: true },
-	,
 	{
 		id: 'openrouter',
 		provider: 'openrouter',
 		model: 'openai/gpt-oss-120b:free',
 		active: true,
 	},
-
-	// Available to add
 	{
 		id: 'cerebras2',
 		provider: 'cerebras',

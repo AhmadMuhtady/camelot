@@ -877,6 +877,27 @@
 			</div>
 		</div>
 
+		<div id="knight-panel" class="hidden fixed bottom-28 right-8 z-40 w-72">
+			<div
+				class="glass-card rounded-2xl p-4 border shadow-2xl"
+				style="border-color: var(--border)"
+			>
+				<div class="flex items-center justify-between mb-3">
+					<h3 class="font-semibold text-sm" style="color: var(--primary)">
+						⚔️ Add a Knight
+					</h3>
+					<span
+						id="knight-count"
+						class="text-xs"
+						style="color: var(--text-muted)"
+					>
+						4/6 active
+					</span>
+				</div>
+				<div id="panel-knights-list" class="flex flex-col gap-2"></div>
+			</div>
+		</div>
+
 		<!-- Theme controller (must run BEFORE App.js so theme-btn handler is in place) -->
 
 		<script type="module" src="src/App.js"></script>

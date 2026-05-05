@@ -30,7 +30,7 @@ ${summary}
 
 Synthesize their views into one final verdict. Be decisive, wise, and concise. Max 150 tokens.`;
 
-			return await this._call('gemini', 'gemini-2.5-flash', null, prompt, 300);
+			return await this._call('gemini', 'gemini-2.5-flash', null, prompt, 500);
 		} catch (err) {
 			console.error('King API Call Failed:', err.message);
 			return '[The King is silent]';

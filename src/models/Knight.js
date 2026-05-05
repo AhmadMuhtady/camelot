@@ -29,10 +29,21 @@ Be direct, stay in character, no lengthy introductions.`;
 	formatResponse(text) {
 		return text
 			.trim()
-			.replace(/^[\s\S]*?<\/think>/i, '')
-			.replace(/^(As Sir \w+,?\s*)/i, '')
-			.replace(/^(I'?m\s+\w+[^.]*\.\s*)/i, '')
-			.replace(/^(I am\s+\w+[^.]*\.\s*)/i, '')
+			.replace(/^[\s\S]*?<\/think>/i, '') // strip thinking blocks
+			.replace(/^(As Sir \w+,?\s*)/i, '') // strip "As Sir X,"
+			.replace(/^(I'?m\s+\w+[^.]*\.\s*)/i, '') // strip "I'm X..."
+			.replace(/^(I am\s+\w+[^.]*\.\s*)/i, '') // strip "I am X..."
+			.replace(/\*\*(.*?)\*\*/g, '$1') // bold
+			.replace(/\*(.*?)\*/g, '$1') // italic
+			.replace(/\*{1,3}/g, '') // leftover stars
+			.replace(/#{1,6}\s/g, '') // headers
+			.replace(/`{1,3}(.*?)`{1,3}/gs, '$1') // code blocks
+			.replace(/^---+$/gm, '') // horizontal rules
+			.replace(/^--+$/gm, '') // double dashes
+			.replace(/^[-•]\s/gm, '') // bullet points
+			.replace(/^\d+\.\s/gm, '') // numbered lists
+			.replace(/\+\+(.*?)\+\+/g, '$1') // ++text++
+			.replace(/~~(.*?)~~/g, '$1') // strikethrough
 			.trim();
 	}
 }
