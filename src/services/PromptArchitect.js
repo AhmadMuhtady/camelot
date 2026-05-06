@@ -48,7 +48,7 @@ Generate exactly ${count} prompts.`;
 					{ role: 'system', content: systemPrompt },
 					{
 						role: 'user',
-						content: `User's idea: "${userIdea}"\n\nForge the 3 prompts now.`,
+						content: `User's idea: "${userIdea}"\n\nForge the ${count} prompts now.`,
 					},
 				],
 			}),

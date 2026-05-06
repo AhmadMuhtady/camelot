@@ -415,7 +415,7 @@
 				<div id="chronicles-list" class="flex flex-wrap gap-2"></div>
 			</section>
 
-			<section class="flex justify-center gap-4">
+			<section id="mode-section" class="flex justify-center gap-4">
 				<div id="ai-mode" class="glass-card p-1 rounded-full flex gap-1">
 					<button
 						data-mode="sharp"
@@ -442,6 +442,60 @@
 				id="knights-grid"
 				class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
 			></section>
+
+			<!-- Squire Section (hidden by default) -->
+			<section id="squire-section" class="hidden space-y-8">
+				<!-- Header -->
+				<div class="text-center space-y-2">
+					<h2
+						class="text-2xl font-bold"
+						style="color: var(--primary); font-family: 'Cinzel', serif"
+					>
+						🎨 The Squire's Atelier
+					</h2>
+					<p class="text-sm" style="color: var(--text-muted)">
+						Describe your vision — King Arthur will forge the prompts, the
+						knights will paint the world.
+					</p>
+				</div>
+
+				<!-- Image Knights Grid -->
+				<div
+					id="image-knights-grid"
+					class="grid grid-cols-1 md:grid-cols-3 gap-6"
+				>
+					<!-- Rendered by JS -->
+				</div>
+
+				<!-- Loading State -->
+				<div
+					id="squire-loading"
+					class="hidden flex flex-col items-center gap-4 py-12"
+				>
+					<div class="flex items-center gap-3">
+						<div
+							class="w-3 h-3 rounded-full animate-pulse"
+							style="background: var(--primary)"
+						></div>
+						<div
+							class="w-3 h-3 rounded-full animate-pulse"
+							style="background: var(--primary); animation-delay: 0.2s"
+						></div>
+						<div
+							class="w-3 h-3 rounded-full animate-pulse"
+							style="background: var(--primary); animation-delay: 0.4s"
+						></div>
+					</div>
+					<p class="text-sm" style="color: var(--text-muted)">
+						Arthur is forging the prompts...
+					</p>
+				</div>
+
+				<!-- Results Gallery -->
+				<div id="squire-gallery" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+					<!-- Image cards rendered by JS -->
+				</div>
+			</section>
 
 			<section id="verdict-section" class="hidden relative">
 				<div

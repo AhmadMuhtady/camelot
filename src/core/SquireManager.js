@@ -15,6 +15,7 @@ export class SquireManager {
 	async _generate(idea) {
 		if (this.isGenerating) return;
 		this.isGenerating = true;
+		let results = null;
 
 		try {
 			BusEvent.emit('squire:loading', true);
@@ -25,20 +26,21 @@ export class SquireManager {
 				activeModels.length,
 			);
 
-			const results = prompts.map((p, i) => ({
+			results = prompts.map((p, i) => ({
 				style: p.style,
 				title: p.title,
 				prompt: p.prompt,
-				url: this.image.generateUrl(p.prompt, { model: activeModels[i].id }),
+				url: this.image.generateUrl(p.prompt, { model: activeModels[i].model }),
+				hex: activeModels[i].hex,
+				glow: activeModels[i].glow,
 			}));
-
-			BusEvent.emit('squire:results', results);
 		} catch (err) {
 			console.error('Squire failed:', err.message);
 			BusEvent.emit('squire:error', err.message);
 		} finally {
 			this.isGenerating = false;
 			BusEvent.emit('squire:loading', false);
+			if (results) BusEvent.emit('squire:results', results);
 		}
 	}
 }

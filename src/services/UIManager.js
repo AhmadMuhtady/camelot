@@ -4,6 +4,7 @@ export class UIManager {
 	constructor(store) {
 		this.isModalOpen = false;
 		this.currentMode = 'sharp';
+		this.currentTab = 'roundtable';
 		this.store = store;
 		this.init();
 		this._applySavedTheme();
@@ -37,18 +38,16 @@ export class UIManager {
 		this.modeContainer.addEventListener('click', (e) => this.toggleMode(e));
 		this.navLinks.addEventListener('click', (e) => this.handleNavigation(e));
 
-		this.debateBtn.addEventListener('click', () => {
-			const topic = this.debateInput.value.trim();
-			if (!topic) return;
-			this.handleSearchIcon();
-			BusEvent.emit('debate:start', { topic, mode: this.currentMode });
-		});
 		this.debateInput.addEventListener('keydown', (e) => {
 			if (e.key !== 'Enter') return;
 			const topic = this.debateInput.value.trim();
 			if (!topic) return;
 			this.handleSearchIcon();
-			BusEvent.emit('debate:start', { topic, mode: this.currentMode });
+			if (this.currentTab === 'squire') {
+				BusEvent.emit('squire:generate', topic);
+			} else {
+				BusEvent.emit('debate:start', { topic, mode: this.currentMode });
+			}
 		});
 
 		BusEvent.on('knight:response', this.renderKnightCard.bind(this));
@@ -113,6 +112,38 @@ export class UIManager {
 				const debate = debates[chip.dataset.index];
 				if (debate) BusEvent.emit('chronicles:replay', debate);
 			});
+
+		this.debateBtn.addEventListener('click', () => {
+			const topic = this.debateInput.value.trim();
+			if (!topic) return;
+			this.handleSearchIcon();
+			if (this.currentTab === 'squire') {
+				BusEvent.emit('squire:generate', topic);
+			} else {
+				BusEvent.emit('debate:start', { topic, mode: this.currentMode });
+			}
+		});
+
+		BusEvent.on('squire:loading', (isLoading) => {
+			document
+				.getElementById('squire-loading')
+				.classList.toggle('hidden', !isLoading);
+			document
+				.getElementById('squire-gallery')
+				.classList.toggle('hidden', isLoading);
+		});
+
+		BusEvent.on('squire:results', (results) =>
+			this._renderSquireResults(results),
+		);
+		BusEvent.on('squire:error', (msg) => {
+			const gallery = document.getElementById('squire-gallery');
+			if (gallery)
+				gallery.innerHTML = `<p class="text-sm col-span-3 text-center py-8" style="color:var(--text-muted)">Generation failed: ${msg}</p>`;
+		});
+		BusEvent.on('squire:image:render', (models) =>
+			this._renderImageKnights(models),
+		);
 	}
 
 	handleSearchIcon() {
@@ -145,11 +176,40 @@ export class UIManager {
 			b.style.color = 'var(--text-muted)';
 			b.style.filter = '';
 		});
-
 		NavBtn.style.color = 'var(--primary)';
 		NavBtn.style.filter = 'drop-shadow(0 0 8px var(--selection))';
 
-		BusEvent.emit('nav:change', NavBtn.dataset.nav);
+		const tab = NavBtn.dataset.nav;
+
+		const isSquire = tab === 'squire';
+		const isChronicles = tab === 'chronicles';
+		const isRoundtable = tab === 'roundtable';
+
+		document
+			.getElementById('mode-section')
+			.classList.toggle('hidden', !isRoundtable);
+		document
+			.getElementById('knights-grid')
+			.classList.toggle('hidden', !isRoundtable);
+		document
+			.getElementById('chronicles-section')
+			.classList.toggle('hidden', !isRoundtable && !isChronicles);
+		document
+			.getElementById('squire-section')
+			.classList.toggle('hidden', !isSquire);
+
+		if (isSquire) {
+			this.debateInput.placeholder = 'Describe your vision for the Squire...';
+			this.debateBtn.querySelector('span').textContent = 'brush';
+			document.getElementById('verdict-section').classList.add('hidden');
+		} else {
+			this.debateInput.placeholder = 'Summon a debate topic...';
+			this.debateBtn.querySelector('span').textContent = 'gavel';
+		}
+
+		this.currentTab = tab;
+
+		BusEvent.emit('nav:change', tab);
 	}
 
 	_createCard(data) {
@@ -208,6 +268,102 @@ export class UIManager {
 	renderAll(knights) {
 		this.KnightsContainer.innerHTML = '';
 		knights.forEach((knight) => this._createCard(knight));
+	}
+
+	// Render image knight cards (called on init and when models change)
+	_renderImageKnights(models) {
+		const grid = document.getElementById('image-knights-grid');
+		if (!grid) return;
+		grid.innerHTML = '';
+		models.forEach((m) => {
+			grid.insertAdjacentHTML(
+				'beforeend',
+				`
+            <div class="glass-card rounded-[24px] p-6 flex flex-col gap-4"
+                 style="border-left: 3px solid ${m.hex}; box-shadow: 0 0 20px ${m.glow}20">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center"
+                         style="border: 1px solid ${m.hex}; box-shadow: 0 0 15px ${m.glow}">
+                        <span class="text-xl">${m.emoji}</span>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-sm" style="color: var(--text)">${m.name}</h4>
+                        <p class="text-xs" style="color: var(--text-muted)">${m.model}</p>
+                    </div>
+                </div>
+            </div>
+        `,
+			);
+		});
+	}
+
+	// Render generated image results
+	_renderSquireResults(results) {
+		const gallery = document.getElementById('squire-gallery');
+		if (!gallery) return;
+		gallery.innerHTML = '';
+		results.forEach((r, idx) => {
+			gallery.insertAdjacentHTML(
+				'beforeend',
+				`<div class="glass-card rounded-[24px] overflow-hidden flex flex-col"
+			     style="border: 1px solid ${r.hex || 'var(--border)'}">
+			    <div class="relative aspect-square" style="background:var(--input-bg)">
+			        <div data-skeleton="${idx}" class="absolute inset-0 flex flex-col items-center justify-center gap-3">
+			            <div class="flex gap-2">
+			                <div class="w-2 h-2 rounded-full animate-pulse" style="background:${r.hex}"></div>
+			                <div class="w-2 h-2 rounded-full animate-pulse" style="background:${r.hex};animation-delay:0.2s"></div>
+			                <div class="w-2 h-2 rounded-full animate-pulse" style="background:${r.hex};animation-delay:0.4s"></div>
+			            </div>
+			            <p class="text-xs" style="color:var(--text-muted)">Painting...</p>
+			        </div>
+			        <img data-img="${idx}" src="${r.url}" alt="${r.title}"
+			             referrerpolicy="no-referrer"
+			             class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500"/>
+			        <div class="absolute inset-0 flex items-end opacity-0 hover:opacity-100 transition-opacity duration-300"
+			             style="background:linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)">
+			            <p class="text-xs leading-relaxed p-4 pb-12" style="color:rgba(255,255,255,0.9)">${r.prompt}</p>
+			        </div>
+			        <button data-dl="${idx}"
+			                class="hidden absolute bottom-3 right-3 w-9 h-9 rounded-xl flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
+			                style="background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.15);color:#fff"
+			                title="Download image">
+			            <span class="material-symbols-outlined text-[18px]">download</span>
+			        </button>
+			    </div>
+			    <div class="p-4 space-y-1">
+			        <p class="font-semibold text-sm" style="color:var(--primary)">${r.title}</p>
+			        <p class="text-xs" style="color:var(--text-muted)">${r.style}</p>
+			    </div>
+			</div>`,
+			);
+
+			const img = gallery.querySelector(`[data-img="${idx}"]`);
+			const skeleton = gallery.querySelector(`[data-skeleton="${idx}"]`);
+			const dlBtn = gallery.querySelector(`[data-dl="${idx}"]`);
+
+			img.addEventListener('load', () => {
+				skeleton.classList.add('hidden');
+				img.classList.remove('opacity-0');
+				dlBtn.classList.remove('hidden');
+			});
+			img.addEventListener('error', () => {
+				console.error('Image failed:', img.src);
+				skeleton.innerHTML = `<p class="text-xs text-center px-4" style="color:var(--text-muted)">Image failed to load</p>`;
+			});
+			dlBtn.addEventListener('click', async () => {
+				try {
+					const res = await fetch(r.url, { referrerPolicy: 'no-referrer' });
+					const blob = await res.blob();
+					const a = document.createElement('a');
+					a.href = URL.createObjectURL(blob);
+					a.download = `${r.title.replace(/\s+/g, '_')}.jpg`;
+					a.click();
+					URL.revokeObjectURL(a.href);
+				} catch (e) {
+					console.error('Download failed:', e);
+				}
+			});
+		});
 	}
 
 	handleKingCard(verdict) {

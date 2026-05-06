@@ -1,13 +1,10 @@
 export class ImageService {
 	generateUrl(prompt, opts = {}) {
-		const params = new URLSearchParams({
-			width: opts.width || 1024,
-			height: opts.height || 1024,
-			model: opts.model || 'flux',
-			nologo: 'true',
-			seed: opts.seed || Math.floor(Math.random() * 99999),
-		});
-
-		return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?${params}`;
+		const seed = opts.seed || Math.floor(Math.random() * 99999);
+		const width = opts.width || 1024;
+		const height = opts.height || 1024;
+		const model = opts.model || 'flux';
+		const encoded = encodeURIComponent(prompt);
+		return `https://image.pollinations.ai/prompt/${encoded}?width=${width}&height=${height}&model=${model}&seed=${seed}`;
 	}
 }

@@ -1,6 +1,7 @@
 import { UIManager } from './services/UIManager.js';
 import { CamelotManager } from './core/CamelotManager.js';
 import { DebateStore } from './services/DebateStore.js';
+import { SquireManager } from './core/SquireManager.js';
 
 class App {
 	constructor(ui, camelot, store, squire) {

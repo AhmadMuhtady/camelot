@@ -36,6 +36,10 @@ export class CamelotManager {
 			});
 			BusEvent.emit('knight:complete', debate.verdict);
 		});
+
+		BusEvent.on('squire:generate', () => {
+			BusEvent.emit('verdict:reset');
+		});
 	}
 
 	async _startDebate(topic, mode) {
