@@ -16,13 +16,18 @@ export class Knight {
 	}
 
 	getTokens(mode) {
-		const map = { sharp: 200, normal: 350, detailed: 600 };
-		return map[mode] ?? 200;
+		const map = {
+			sharp: { groq: 100, gemini: 300, cerebras: 100, openrouter: 100 },
+			normal: { groq: 200, gemini: 500, cerebras: 200, openrouter: 200 },
+			detailed: { groq: 350, gemini: 900, cerebras: 350, openrouter: 350 },
+		};
+		return map[mode]?.[this.provider] ?? 150;
 	}
 
 	getSystemPrompt(mode) {
+		const words = { sharp: 60, normal: 120, detailed: 250 };
 		return `You are ${this.name} at the AI Round Table. ${this.personality}. 
-Respond in maximum ${this.getTokens(mode)} tokens. 
+Respond in maximum ${words[mode]} words. 
 Be direct, stay in character, no lengthy introductions.`;
 	}
 

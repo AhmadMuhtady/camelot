@@ -1,9 +1,10 @@
 import { BusEvent } from '../core/EventBus.js';
 
 export class UIManager {
-	constructor() {
+	constructor(store) {
 		this.isModalOpen = false;
 		this.currentMode = 'sharp';
+		this.store = store;
 		this.init();
 		this._applySavedTheme();
 		this.initListeners();
@@ -87,6 +88,31 @@ export class UIManager {
 			this.kingSection.classList.add('hidden');
 			this.kingText.textContent = '';
 		});
+
+		BusEvent.on('chronicles:update', (debates) =>
+			this._renderChronicles(debates),
+		);
+
+		document
+			.getElementById('chronicles-clear')
+			?.addEventListener('click', () => {
+				BusEvent.emit('chronicles:clear');
+			});
+
+		BusEvent.on('chronicles:clear', () => {
+			document.getElementById('chronicles-list').innerHTML = '';
+		});
+
+		// Replace the chronicles-list click listener:
+		document
+			.getElementById('chronicles-list')
+			?.addEventListener('click', (e) => {
+				const chip = e.target.closest('[data-index]');
+				if (!chip) return;
+				const debates = this.store ? this.store.getAll() : [];
+				const debate = debates[chip.dataset.index];
+				if (debate) BusEvent.emit('chronicles:replay', debate);
+			});
 	}
 
 	handleSearchIcon() {
@@ -278,6 +304,24 @@ export class UIManager {
 		const activeCount = document.querySelectorAll('[data-id]').length;
 		document.querySelectorAll('[data-remove]').forEach((btn) => {
 			btn.style.display = activeCount <= 2 ? 'none' : 'block';
+		});
+	}
+
+	_renderChronicles(debates) {
+		const list = document.getElementById('chronicles-list');
+		if (!list) return;
+		list.innerHTML = '';
+		debates.forEach((d, i) => {
+			list.insertAdjacentHTML(
+				'beforeend',
+				`
+            <button data-index="${i}" 
+                    class="text-xs px-3 py-1.5 rounded-full glass-card chronicle-chip"
+                    style="color: var(--text-muted)">
+                ${d.topic}
+            </button>
+        `,
+			);
 		});
 	}
 }

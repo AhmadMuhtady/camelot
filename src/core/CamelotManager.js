@@ -4,9 +4,11 @@ import { KNIGHTS_CONFIG } from '../models/KnightsConfig.js';
 import { AIService } from '../services/AIService.js';
 
 export class CamelotManager {
-	constructor(ui) {
+	constructor(ui, store) {
+		this.isDebating = false;
 		this.ui = ui;
 		this.ai = new AIService();
+		this.store = store;
 		this.knights = KNIGHTS_CONFIG.filter((k) => k.active).map(
 			(k) => new Knight(k),
 		);
@@ -19,25 +21,50 @@ export class CamelotManager {
 
 		BusEvent.on('knight:add', (id) => this._toggleKnight(id, true));
 		BusEvent.on('knight:remove', (id) => this._toggleKnight(id, false));
+
+		BusEvent.emit('chronicles:update', this.store.getAll());
+
+		BusEvent.on('chronicles:clear', () => {
+			this.store.clear();
+		});
+
+		BusEvent.on('chronicles:replay', (debate) => {
+			BusEvent.emit('verdict:reset');
+			this.ui.renderAll(debate.responses);
+			debate.responses.forEach((r) => {
+				BusEvent.emit('knight:response', { id: r.id, response: r.response });
+			});
+			BusEvent.emit('knight:complete', debate.verdict);
+		});
 	}
 
 	async _startDebate(topic, mode) {
-		BusEvent.emit('verdict:reset');
+		if (this.isDebating) return;
+		this.isDebating = true;
 
-		this.ui.renderAll(this.knights);
+		try {
+			BusEvent.emit('verdict:reset');
 
-		const responses = [];
-		for (const knight of this.knights) {
-			const res = await this.ai.askKnight(knight, topic, mode);
+			this.ui.renderAll(this.knights);
 
-			responses.push(res);
-			BusEvent.emit('knight:response', { id: knight.id, response: res });
-			await new Promise((r) => setTimeout(r, 3000));
+			const responses = [];
+			for (const knight of this.knights) {
+				const res = await this.ai.askKnight(knight, topic, mode);
+
+				responses.push(res);
+				BusEvent.emit('knight:response', { id: knight.id, response: res });
+				await new Promise((r) => setTimeout(r, 3000));
+			}
+
+			await new Promise((r) => setTimeout(r, 10000));
+			const verdict = await this.ai._callArthur(topic, responses, this.knights);
+			BusEvent.emit('knight:complete', verdict);
+
+			this.store.save(topic, responses, this.knights, verdict);
+			BusEvent.emit('chronicles:update', this.store.getAll());
+		} finally {
+			this.isDebating = false;
 		}
-
-		await new Promise((r) => setTimeout(r, 10000));
-		const verdict = await this.ai._callArthur(topic, responses, this.knights);
-		BusEvent.emit('knight:complete', verdict);
 	}
 
 	_updatePanel() {
