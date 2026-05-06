@@ -1,4 +1,5 @@
 const EMOJIS = ['🧠', '⚡', '🔥', '✨', '🌊', '🎯', '🔮', '⚔️', '🛡️', '🌌'];
+
 const COLOR_MAP = {
 	red: { hex: '#ef4444', glow: 'rgba(239,68,68,0.4)' },
 	blue: { hex: '#3b82f6', glow: 'rgba(59,130,246,0.4)' },
@@ -15,43 +16,38 @@ const PERSONALITIES = [
 	'A cynical pessimist who believes most ideas are doomed to fail',
 	'An arrogant genius who assumes everyone else is wrong',
 	'A contrarian rebel who challenges every assumption',
-
 	'A data-obsessed analyst who only trusts numbers and evidence',
 	'A hyper-logical AI that rejects emotions entirely',
 	'A systems thinker who breaks everything into cause and effect',
 	'A scientist who demands proof before accepting anything',
 	'A strategist who thinks 10 steps ahead in every argument',
-
 	'A stoic philosopher who only speaks in profound questions',
 	'An existential thinker who questions the meaning behind everything',
 	'A moral philosopher focused on ethics and consequences',
 	'A wise monk who values balance and inner truth',
 	'A nihilist who believes nothing truly matters',
-
 	'A historian who finds patterns from the past in everything',
 	'A visionary futurist who thinks 100 years ahead',
 	'A realist who focuses only on current facts and limitations',
 	'A global thinker who considers worldwide impact',
 	'A cultural critic who analyzes societal behavior',
-
 	'A diplomat who always finds middle ground',
 	'An empathetic listener who prioritizes human impact',
 	'A mediator who resolves conflicts between all sides',
 	'A teacher who explains ideas in the simplest way possible',
 	'A psychologist who analyzes motivations and behavior',
-
 	'A conspiracy theorist who refuses to believe anything',
 	'A chaotic troll who intentionally provokes others',
 	'A comedian who turns every argument into satire',
 	'A storyteller who explains everything through analogies',
 	'A street-smart hustler who thinks in real-world survival terms',
-
 	'A pragmatist who only cares about what works right now',
 	'A risk-taker who always pushes for bold moves',
 	'A cautious planner who avoids all unnecessary risks',
 	'A leader who focuses on decisive action',
 	'A judge who evaluates arguments and declares winners',
 ];
+
 export const KNIGHTS_CONFIG = [
 	{
 		id: 'groq',
@@ -83,7 +79,7 @@ export const KNIGHTS_CONFIG = [
 
 const KNIGHT_NAMES = [
 	'Sir Lancelot',
-	'Sir merlin',
+	'Sir Merlin',
 	'Sir Gawain',
 	'Sir Percival',
 	'Sir Galahad',
@@ -110,10 +106,8 @@ function getFullProfile() {
 		availableColors.length ? availableColors : Object.keys(COLOR_MAP),
 	);
 	usedColors.add(colorKey);
-
 	const color = COLOR_MAP[colorKey];
 
-	// Pick unique name
 	const available = KNIGHT_NAMES.filter((n) => !usedNames.has(n));
 	const name = pickRandom(available.length ? available : KNIGHT_NAMES);
 	usedNames.add(name);
@@ -128,3 +122,43 @@ function getFullProfile() {
 }
 
 export { getFullProfile };
+
+// ═══════════════════════════════
+// IMAGE KNIGHTS
+// ═══════════════════════════════
+
+const IMAGE_COLOR_MAP = {
+	rose: { hex: '#f43f5e', glow: 'rgba(244,63,94,0.4)' },
+	violet: { hex: '#8b5cf6', glow: 'rgba(139,92,246,0.4)' },
+	amber: { hex: '#f59e0b', glow: 'rgba(245,158,11,0.4)' },
+};
+
+export const IMAGE_MODELS = [
+	{
+		id: 1,
+		name: 'Sir Canvas',
+		emoji: '🎨',
+		model: 'flux',
+		hex: IMAGE_COLOR_MAP.rose.hex,
+		glow: IMAGE_COLOR_MAP.rose.glow,
+		active: true,
+	},
+	{
+		id: 2,
+		name: 'Sir Lens',
+		emoji: '📸',
+		model: 'flux',
+		hex: IMAGE_COLOR_MAP.violet.hex,
+		glow: IMAGE_COLOR_MAP.violet.glow,
+		active: false,
+	},
+	{
+		id: 3,
+		name: 'Sir Brush',
+		emoji: '🖼️',
+		model: 'flux',
+		hex: IMAGE_COLOR_MAP.amber.hex,
+		glow: IMAGE_COLOR_MAP.amber.glow,
+		active: false,
+	},
+];

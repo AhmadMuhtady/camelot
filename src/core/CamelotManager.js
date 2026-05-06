@@ -75,13 +75,8 @@ export class CamelotManager {
 	}
 
 	_toggleKnight(id) {
-		console.log('toggleKnight called with id:', id);
-		console.log(
-			'KNIGHTS_CONFIG ids:',
-			KNIGHTS_CONFIG.map((k) => k.id),
-		);
 		const config = KNIGHTS_CONFIG.find((k) => k.id === id);
-		console.log('found config:', config);
+
 		if (!config) return;
 
 		const activeCount = KNIGHTS_CONFIG.filter((k) => k.active).length;
