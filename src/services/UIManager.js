@@ -32,6 +32,10 @@ export class UIManager {
 		this.knightPanel = document.getElementById('knight-panel');
 		this.panelList = document.getElementById('panel-knights-list');
 		this.knightCount = document.getElementById('knight-count');
+
+		this.imagePanel = document.getElementById('image-panel');
+		this.imagePanelList = document.getElementById('panel-image-list');
+		this.imageKnightCount = document.getElementById('image-knight-count');
 	}
 
 	initListeners() {
@@ -63,7 +67,11 @@ export class UIManager {
 		document.addEventListener('click', (e) => this._handleClickOutside(e));
 
 		this.addBtn.addEventListener('click', () => {
-			this.knightPanel.classList.toggle('hidden');
+			if (this.currentTab === 'squire') {
+				this.imagePanel.classList.toggle('hidden');
+			} else {
+				this.knightPanel.classList.toggle('hidden');
+			}
 		});
 
 		this.panelList.addEventListener('click', (e) => {
@@ -144,6 +152,17 @@ export class UIManager {
 		BusEvent.on('squire:image:render', (models) =>
 			this._renderImageKnights(models),
 		);
+
+		this.imagePanelList.addEventListener('click', (e) => {
+			const btn = e.target.closest('[data-image-add]');
+			if (!btn) return;
+			BusEvent.emit('image:add', Number(btn.dataset.imageAdd));
+		});
+
+		BusEvent.on('image:panel:update', ({ inactive, activeCount }) => {
+			this._renderImagePanel(inactive);
+			this.imageKnightCount.textContent = `${activeCount}/3 active`;
+		});
 	}
 
 	handleSearchIcon() {
@@ -346,9 +365,11 @@ export class UIManager {
 				img.classList.remove('opacity-0');
 				dlBtn.classList.remove('hidden');
 			});
-			img.addEventListener('error', () => {
-				console.error('Image failed:', img.src);
-				skeleton.innerHTML = `<p class="text-xs text-center px-4" style="color:var(--text-muted)">Image failed to load</p>`;
+			img.addEventListener('error', async () => {
+				await new Promise((r) => setTimeout(r, 4000));
+				const url = new URL(img.src);
+				url.searchParams.set('seed', Math.floor(Math.random() * 99999));
+				img.src = url.toString();
 			});
 			dlBtn.addEventListener('click', async () => {
 				try {
@@ -476,6 +497,34 @@ export class UIManager {
                     style="color: var(--text-muted)">
                 ${d.topic}
             </button>
+        `,
+			);
+		});
+	}
+
+	_renderImagePanel(inactive) {
+		this.imagePanelList.innerHTML = '';
+
+		if (inactive.length === 0) {
+			this.imagePanelList.innerHTML = `<p class="text-xs text-center py-2" style="color: var(--text-muted)">All image knights active!</p>`;
+			return;
+		}
+
+		inactive.forEach((m) => {
+			this.imagePanelList.insertAdjacentHTML(
+				'beforeend',
+				`
+            <div class="flex items-center justify-between p-2 rounded-xl"
+                 style="background: var(--input-bg)">
+                <div class="flex items-center gap-2">
+                    <span>${m.emoji}</span>
+                    <span class="text-sm" style="color: var(--text)">${m.name}</span>
+                </div>
+                <button data-image-add="${m.id}" class="text-xs px-2 py-1 rounded-lg"
+                        style="background: var(--primary); color: var(--bg)">
+                    + Add
+                </button>
+            </div>
         `,
 			);
 		});
